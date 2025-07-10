@@ -1,15 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:skin_chek/screens/login/login_view_model.dart';
-import 'package:skin_chek/screens/login/login_view.dart';
+import 'package:skin_chek/screens/login/login.dart';
 
 void main() {
-  runApp(
-    MultiProvider(
-      providers: [ChangeNotifierProvider(create: (_) => LoginViewModel())],
-      child: const MyApp(),
-    ),
-  );
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -39,7 +32,7 @@ class MyApp extends StatelessWidget {
         // tested with just a hot reload.
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: const LoginView(),
+      home: const Login(),
     );
   }
 }
