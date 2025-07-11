@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:skin_chek/screens/chat/ChatItem.dart';
 import 'package:skin_chek/screens/chat/chat_hook.dart';
 
 class Chat extends StatefulWidget {
@@ -11,6 +12,106 @@ class Chat extends StatefulWidget {
 class _ChatState extends State<Chat> {
   ChatHook? viewModel;
   final _formKey = GlobalKey<FormState>();
+  List<Map<String, dynamic>> chat = [
+    {
+      "message": "Kulit saya gatal dan muncul ruam merah.",
+      "isSender": true,
+      "date": "08:01",
+    },
+    {
+      "message": "Sudah berapa lama gejala ini muncul?",
+      "isSender": false,
+      "date": "08:01",
+    },
+    {"message": "Sekitar 3 hari terakhir.", "isSender": true, "date": "08:02"},
+    {
+      "message": "Apakah Anda merasa perih atau panas pada kulit tersebut?",
+      "isSender": false,
+      "date": "08:03",
+    },
+    {
+      "message": "Iya, terutama saat berkeringat.",
+      "isSender": true,
+      "date": "08:03",
+    },
+    {
+      "message": "Apakah Anda baru saja mengganti sabun atau deterjen?",
+      "isSender": false,
+      "date": "08:04",
+    },
+    {
+      "message": "Saya baru coba sabun mandi baru minggu ini.",
+      "isSender": true,
+      "date": "08:04",
+    },
+    {
+      "message": "Kemungkinan kulit Anda iritasi karena sabun tersebut.",
+      "isSender": false,
+      "date": "08:05",
+    },
+    {
+      "message": "Apakah ini termasuk alergi?",
+      "isSender": true,
+      "date": "08:06",
+    },
+    {
+      "message":
+          "Bisa jadi, namun perlu diperiksa langsung untuk memastikannya.",
+      "isSender": false,
+      "date": "08:06",
+    },
+    {
+      "message": "Saya juga melihat ada kulit yang mengelupas.",
+      "isSender": true,
+      "date": "08:07",
+    },
+    {
+      "message": "Itu bisa menjadi gejala dermatitis kontak atau eksim.",
+      "isSender": false,
+      "date": "08:07",
+    },
+    {
+      "message": "Obat apa yang bisa saya pakai?",
+      "isSender": true,
+      "date": "08:08",
+    },
+    {
+      "message": "Gunakan salep hidrokortison tipis-tipis 2 kali sehari.",
+      "isSender": false,
+      "date": "08:08",
+    },
+    {
+      "message": "Apakah perlu ke dokter kulit?",
+      "isSender": true,
+      "date": "08:09",
+    },
+    {
+      "message":
+          "Jika tidak membaik dalam 3–5 hari, sebaiknya konsultasi langsung.",
+      "isSender": false,
+      "date": "08:09",
+    },
+    {
+      "message": "Oke, saya akan coba salep dulu.",
+      "isSender": true,
+      "date": "08:10",
+    },
+    {
+      "message": "Jangan lupa juga untuk hentikan pemakaian sabun yang baru.",
+      "isSender": false,
+      "date": "08:10",
+    },
+    {
+      "message": "Terima kasih atas sarannya!",
+      "isSender": true,
+      "date": "08:11",
+    },
+    {
+      "message": "Sama-sama, semoga lekas membaik.",
+      "isSender": false,
+      "date": "08:11",
+    },
+  ];
 
   @override
   void initState() {
@@ -37,10 +138,18 @@ class _ChatState extends State<Chat> {
           children: [
             Expanded(
               child: ListView(
-                padding: const EdgeInsets.all(16),
-                children: const [
-                  Text("Belum ada pesan..."), // Ganti dengan daftar pesan nanti
-                ],
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 0,
+                  vertical: 16,
+                ),
+                children:
+                    chat.map((ch) {
+                      return ChatItem(
+                        message: ch['message'],
+                        isSender: ch['isSender'],
+                        date: ch['date'],
+                      );
+                    }).toList(),
               ),
             ),
 
