@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 
-const primaryColor = Color(0xFF36A693);
-const secondaryColor = Color(0xFF69D7C4);
+// const primaryColor = Color(0xFF36A693);
+// const secondaryColor = Color(0xFF69D7C4);
+const secondaryColor = Color(0xFF69D7C4); // Sekarang jadi lebih terang
+// const primaryColor = Color(0xFF06A98D); // Sekarang jadi lebih gelap
+const primaryColor = Color(0xFF06A98D); // Sekarang jadi lebih gelap
 
 final ThemeData customTheme = ThemeData(
   useMaterial3: true,
   colorScheme: ColorScheme.fromSeed(
     seedColor: primaryColor,
     brightness: Brightness.light,
-    secondary: secondaryColor, // ✅ pakai variabel
+    secondary: secondaryColor,
   ),
   scaffoldBackgroundColor: Colors.white,
   appBarTheme: AppBarTheme(
@@ -26,12 +29,23 @@ final ThemeData customTheme = ThemeData(
     ),
   ),
   inputDecorationTheme: InputDecorationTheme(
-    border: const OutlineInputBorder(),
-    focusedBorder: OutlineInputBorder(
-      borderSide: BorderSide(color: primaryColor),
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(8),
+      borderSide: BorderSide(color: Colors.grey.shade300), // abu-abu muda
     ),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(8),
+      borderSide: BorderSide(color: Colors.grey.shade300),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(8),
+      borderSide: BorderSide(color: primaryColor, width: 2),
+    ),
+    contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
     labelStyle: TextStyle(color: primaryColor),
+    hintStyle: TextStyle(fontSize: 14),
   ),
+
   textTheme: const TextTheme(
     bodyLarge: TextStyle(fontSize: 16),
     titleLarge: TextStyle(

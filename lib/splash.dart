@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:skin_chek/screens/layouts/app.dart';
+import 'package:skin_chek/screens/login/login.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:skin_chek/screens/home/home.dart'; // ganti dengan halaman kamu
 
 class Splash extends StatefulWidget {
   const Splash({super.key});
@@ -59,10 +63,31 @@ class _SplashState extends State<Splash> with TickerProviderStateMixin {
       CurvedAnimation(parent: _logoController, curve: Curves.easeOutBack),
     );
 
-    // Jalankan semua animasi
+    // Jalankan animasi
     _topBubbleController.forward();
     _bottomBubbleController.forward();
     _logoController.forward();
+
+    // Cek login setelah delay
+    Future.delayed(const Duration(seconds: 2), () {
+      final user = FirebaseAuth.instance.currentUser;
+
+      if (user != null) {
+        // Sudah login
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => const App(),
+          ), // ganti dengan halaman utama kamu
+        );
+      } else {
+        // Belum login
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const Login()),
+        );
+      }
+    });
   }
 
   @override
@@ -81,7 +106,6 @@ class _SplashState extends State<Splash> with TickerProviderStateMixin {
     return Scaffold(
       body: Stack(
         children: [
-          // Background gradient
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -91,8 +115,6 @@ class _SplashState extends State<Splash> with TickerProviderStateMixin {
               ),
             ),
           ),
-
-          // Bubble kiri atas (animated)
           Positioned(
             top: -50,
             left: -50,
@@ -108,8 +130,6 @@ class _SplashState extends State<Splash> with TickerProviderStateMixin {
               ),
             ),
           ),
-
-          // Bubble kanan bawah (animated)
           Positioned(
             bottom: -50,
             right: -50,
@@ -125,8 +145,6 @@ class _SplashState extends State<Splash> with TickerProviderStateMixin {
               ),
             ),
           ),
-
-          // Logo animasi
           Center(
             child: FadeTransition(
               opacity: _logoOpacity,
