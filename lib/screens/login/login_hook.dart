@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:skin_chek/screens/chat/Chat.dart';
 import 'package:skin_chek/screens/home/home.dart';
 import 'package:skin_chek/screens/layouts/app.dart';
 import 'package:skin_chek/utils/google_service.dart';
@@ -41,7 +42,7 @@ class LoginHook {
 
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => App()),
+          MaterialPageRoute(builder: (_) => Chat()),
         );
       } else {
         print("❌ Login gagal");
@@ -52,13 +53,12 @@ class LoginHook {
     }
   }
 
-  /// 🔐 Login dengan Google
   Future<void> loginWithGoogle() async {
     try {
       User? user = await _authService.signInWithGoogle();
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => App()),
+        MaterialPageRoute(builder: (_) => Chat()),
       );
 
       debugPrint("✅ Login dengan Google berhasil");

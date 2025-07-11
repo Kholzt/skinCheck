@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:skin_chek/screens/chat/Chat.dart';
 import 'package:skin_chek/screens/layouts/app.dart';
 import 'package:skin_chek/screens/login/login.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -77,7 +78,7 @@ class _SplashState extends State<Splash> with TickerProviderStateMixin {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (_) => const App(),
+            builder: (_) => const Chat(),
           ), // ganti dengan halaman utama kamu
         );
       } else {
