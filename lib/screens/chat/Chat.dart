@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:skin_chek/screens/chat/ChatItem.dart';
+import 'package:skin_chek/screens/chat/Drawer.dart';
 import 'package:skin_chek/screens/chat/chat_hook.dart';
 
 class Chat extends StatefulWidget {
@@ -51,7 +52,7 @@ class _ChatState extends State<Chat> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: Drawer(),
+      drawer: AppDrawer(),
       appBar: AppBar(
         iconTheme: const IconThemeData(color: Colors.black),
         backgroundColor: Colors.transparent,

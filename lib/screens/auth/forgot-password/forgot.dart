@@ -1,19 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:skin_chek/utils/google_service.dart';
-import 'login_hook.dart';
+import 'forgot_hook.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-class Login extends StatefulWidget {
-  const Login({super.key});
+class ForgotPassword extends StatefulWidget {
+  const ForgotPassword({super.key});
 
   @override
-  State<Login> createState() => _LoginState();
+  State<ForgotPassword> createState() => _ForgotPasswordState();
 }
 
-class _LoginState extends State<Login> {
+class _ForgotPasswordState extends State<ForgotPassword> {
   LoginHook? viewModel;
-  final GoogleAuthService _authService = GoogleAuthService();
   final _formKey = GlobalKey<FormState>();
 
   @override
@@ -66,7 +65,7 @@ class _LoginState extends State<Login> {
                     SizedBox(
                       width: width * 0.7,
                       child: const Text(
-                        "Sign in to your Account",
+                        "Lupa Kata Sandi?",
                         style: TextStyle(
                           fontSize: 28,
                           fontWeight: FontWeight.w700,
@@ -77,7 +76,7 @@ class _LoginState extends State<Login> {
                     ),
                     const SizedBox(height: 8),
                     const Text(
-                      "Enter your email and password to log in",
+                      "Masukkan alamat email Anda dan kami akan mengirimkan tautan untuk mengatur ulang kata sandi.",
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
@@ -85,6 +84,7 @@ class _LoginState extends State<Login> {
                       ),
                       textAlign: TextAlign.center,
                     ),
+
                     const SizedBox(height: 32),
 
                     // Card
@@ -99,36 +99,33 @@ class _LoginState extends State<Login> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            OutlinedButton.icon(
-                              onPressed: viewModel!.loginWithGoogle,
-                              icon: const FaIcon(
-                                FontAwesomeIcons.google,
-                                size: 18,
-                              ),
-                              label: const Text("Continue with Google"),
-                              style: OutlinedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 16,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                                side: BorderSide(color: Colors.grey.shade300),
+                            Visibility(
+                              visible:
+                                  (viewModel!.message != "" ||
+                                      viewModel!.errorMessage != ""),
+                              child: Column(
+                                children: [
+                                  Container(
+                                    width: double.infinity,
+                                    padding: EdgeInsets.all(12),
+                                    decoration: BoxDecoration(
+                                      color:
+                                          Theme.of(
+                                            context,
+                                          ).colorScheme.secondary,
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    child: Text(
+                                      viewModel!.message ??
+                                          viewModel!.errorMessage ??
+                                          "",
+                                      style: TextStyle(color: Colors.black),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 24),
+                                ],
                               ),
                             ),
-                            const SizedBox(height: 16),
-                            const Row(
-                              children: [
-                                Expanded(child: Divider()),
-                                Padding(
-                                  padding: EdgeInsets.symmetric(horizontal: 8),
-                                  child: Text("OR"),
-                                ),
-                                Expanded(child: Divider()),
-                              ],
-                            ),
-                            const SizedBox(height: 16),
-
                             TextFormField(
                               controller: viewModel!.emailController,
                               validator: viewModel!.emailValidator,
@@ -140,37 +137,12 @@ class _LoginState extends State<Login> {
                                 ),
                               ),
                             ),
-                            const SizedBox(height: 16),
-
-                            TextFormField(
-                              controller: viewModel!.passwordController,
-                              obscureText: viewModel!.showPassword,
-                              validator: viewModel!.passwordValidator,
-                              keyboardType: TextInputType.text,
-                              decoration: InputDecoration(
-                                hintText: "Password",
-                                suffixIcon: IconButton(
-                                  onPressed:
-                                      () => viewModel!.togglePassword(() {
-                                        setState(() {});
-                                      }),
-                                  icon: Icon(
-                                    viewModel!.showPassword
-                                        ? Icons.visibility_off
-                                        : Icons.visibility,
-                                  ),
-                                ),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                              ),
-                            ),
                             const SizedBox(height: 24),
 
                             ElevatedButton(
                               onPressed: () {
                                 if (_formKey.currentState!.validate()) {
-                                  viewModel!.loginWithEmailPassword();
+                                  viewModel!.forgotPassword();
                                 }
                               },
                               style: ElevatedButton.styleFrom(
@@ -181,7 +153,7 @@ class _LoginState extends State<Login> {
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                               ),
-                              child: const Text("Login"),
+                              child: const Text("Kirim"),
                             ),
                           ],
                         ),

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:skin_chek/screens/chat/Chat.dart';
 import 'package:skin_chek/screens/layouts/app.dart';
-import 'package:skin_chek/screens/login/login.dart';
+import 'package:skin_chek/screens/auth/login/login.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:skin_chek/screens/home/home.dart'; // ganti dengan halaman kamu
 
@@ -75,18 +75,13 @@ class _SplashState extends State<Splash> with TickerProviderStateMixin {
 
       if (user != null) {
         // Sudah login
-        Navigator.pushReplacement(
+        Navigator.pushReplacementNamed(
           context,
-          MaterialPageRoute(
-            builder: (_) => const Chat(),
-          ), // ganti dengan halaman utama kamu
+          "/chat", // ganti dengan halaman utama kamu
         );
       } else {
         // Belum login
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const Login()),
-        );
+        Navigator.pushReplacementNamed(context, "/login");
       }
     });
   }

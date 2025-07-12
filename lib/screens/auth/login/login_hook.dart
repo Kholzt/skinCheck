@@ -40,12 +40,8 @@ class LoginHook {
       if (user != null) {
         print("✅ Login berhasil: ${user.email}");
 
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => Chat()),
-        );
+        Navigator.pushReplacementNamed(context, "/chat");
       } else {
-        print("❌ Login gagal");
         _showError(context, "Pengguna belum terdaftar");
       }
     } on FirebaseAuthException catch (e) {
@@ -56,10 +52,7 @@ class LoginHook {
   Future<void> loginWithGoogle() async {
     try {
       User? user = await _authService.signInWithGoogle();
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => Chat()),
-      );
+      Navigator.pushReplacementNamed(context, '/chat');
 
       debugPrint("✅ Login dengan Google berhasil");
     } on FirebaseAuthException catch (e) {
