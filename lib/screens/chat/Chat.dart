@@ -10,113 +10,42 @@ class Chat extends StatefulWidget {
 }
 
 class _ChatState extends State<Chat> {
-  ChatHook? viewModel;
+  ChatHook viewModel = ChatHook();
   final _formKey = GlobalKey<FormState>();
-  List<Map<String, dynamic>> chat = [
-    {
-      "message": "Kulit saya gatal dan muncul ruam merah.",
-      "isSender": true,
-      "date": "08:01",
-    },
-    {
-      "message": "Sudah berapa lama gejala ini muncul?",
-      "isSender": false,
-      "date": "08:01",
-    },
-    {"message": "Sekitar 3 hari terakhir.", "isSender": true, "date": "08:02"},
-    {
-      "message": "Apakah Anda merasa perih atau panas pada kulit tersebut?",
-      "isSender": false,
-      "date": "08:03",
-    },
-    {
-      "message": "Iya, terutama saat berkeringat.",
-      "isSender": true,
-      "date": "08:03",
-    },
-    {
-      "message": "Apakah Anda baru saja mengganti sabun atau deterjen?",
-      "isSender": false,
-      "date": "08:04",
-    },
-    {
-      "message": "Saya baru coba sabun mandi baru minggu ini.",
-      "isSender": true,
-      "date": "08:04",
-    },
-    {
-      "message": "Kemungkinan kulit Anda iritasi karena sabun tersebut.",
-      "isSender": false,
-      "date": "08:05",
-    },
-    {
-      "message": "Apakah ini termasuk alergi?",
-      "isSender": true,
-      "date": "08:06",
-    },
-    {
-      "message":
-          "Bisa jadi, namun perlu diperiksa langsung untuk memastikannya.",
-      "isSender": false,
-      "date": "08:06",
-    },
-    {
-      "message": "Saya juga melihat ada kulit yang mengelupas.",
-      "isSender": true,
-      "date": "08:07",
-    },
-    {
-      "message": "Itu bisa menjadi gejala dermatitis kontak atau eksim.",
-      "isSender": false,
-      "date": "08:07",
-    },
-    {
-      "message": "Obat apa yang bisa saya pakai?",
-      "isSender": true,
-      "date": "08:08",
-    },
-    {
-      "message": "Gunakan salep hidrokortison tipis-tipis 2 kali sehari.",
-      "isSender": false,
-      "date": "08:08",
-    },
-    {
-      "message": "Apakah perlu ke dokter kulit?",
-      "isSender": true,
-      "date": "08:09",
-    },
-    {
-      "message":
-          "Jika tidak membaik dalam 3–5 hari, sebaiknya konsultasi langsung.",
-      "isSender": false,
-      "date": "08:09",
-    },
-    {
-      "message": "Oke, saya akan coba salep dulu.",
-      "isSender": true,
-      "date": "08:10",
-    },
-    {
-      "message": "Jangan lupa juga untuk hentikan pemakaian sabun yang baru.",
-      "isSender": false,
-      "date": "08:10",
-    },
-    {
-      "message": "Terima kasih atas sarannya!",
-      "isSender": true,
-      "date": "08:11",
-    },
-    {
-      "message": "Sama-sama, semoga lekas membaik.",
-      "isSender": false,
-      "date": "08:11",
-    },
-  ];
+  List<Map<String, dynamic>> chat = [];
+  final ScrollController scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
-    viewModel = ChatHook(context: context);
+    viewModel.setContext(context);
+    fetchChat();
+  }
+
+  Future<void> fetchChat() async {
+    try {
+      final chats = await viewModel.getChat();
+
+      setState(() {
+        chat = chats;
+      });
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        scrollToBottom();
+      });
+    } catch (e) {
+      print("Error loading chat: $e");
+    }
+  }
+
+  void scrollToBottom() {
+    if (scrollController.hasClients) {
+      scrollController.animateTo(
+        scrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    }
   }
 
   @override
@@ -138,6 +67,7 @@ class _ChatState extends State<Chat> {
           children: [
             Expanded(
               child: ListView(
+                controller: scrollController,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 0,
                   vertical: 16,
@@ -146,8 +76,8 @@ class _ChatState extends State<Chat> {
                     chat.map((ch) {
                       return ChatItem(
                         message: ch['message'],
-                        isSender: ch['isSender'],
-                        date: ch['date'],
+                        isSender: ch['sender'] == "user",
+                        date: ch['timestamp'],
                       );
                     }).toList(),
               ),
@@ -181,7 +111,7 @@ class _ChatState extends State<Chat> {
                     // Input pesan
                     Expanded(
                       child: TextFormField(
-                        controller: viewModel!.messageController,
+                        controller: viewModel.messageController,
                         decoration: InputDecoration(
                           hintText: "Tulis pesan...",
                           contentPadding: const EdgeInsets.symmetric(
@@ -197,12 +127,27 @@ class _ChatState extends State<Chat> {
                     SizedBox(width: 10),
                     // Tombol kirim
                     InkWell(
-                      onTap: () {
+                      onTap: () async {
                         if (_formKey.currentState!.validate()) {
-                          print("Kirim: ${viewModel!.messageController.text}");
-                          viewModel!.messageController.clear();
+                          setState(() {
+                            chat.add({
+                              "message": viewModel.messageController.text,
+                              "sender": "user",
+                              "timestamp": DateTime.now().toIso8601String(),
+                            });
+                          });
+
+                          // ⬇️ Scroll setelah item ditambahkan
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            scrollToBottom();
+                          });
+
+                          await viewModel.sendChat();
+                          viewModel.messageController.clear();
+                          await fetchChat();
                         }
                       },
+
                       borderRadius: BorderRadius.circular(
                         20,
                       ), // efek ripple mengikuti bentuk
