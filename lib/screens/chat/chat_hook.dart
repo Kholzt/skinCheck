@@ -1,15 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:google_sign_in/google_sign_in.dart';
-import 'package:skin_chek/screens/chat/Chat.dart';
-import 'package:skin_chek/screens/home/home.dart';
-import 'package:skin_chek/screens/layouts/app.dart';
 import 'package:skin_chek/utils/api_service.dart';
-import 'package:skin_chek/utils/google_service.dart';
 import 'package:uuid/uuid.dart';
 
 class ChatHook {
-  final messageController = TextEditingController();
   BuildContext? context;
   final ScrollController scrollController = ScrollController();
   final String chatId; // properti chat ID
@@ -30,9 +23,8 @@ class ChatHook {
     return List<Map<String, dynamic>>.from(chat);
   }
 
-  Future<void> sendChat() async {
+  Future<void> sendChat({String? message}) async {
     scrollToBottom();
-    final message = messageController.text;
     final chat = await ApiService.sendChat(message: message, chatId: chatId);
     print(chat);
   }
@@ -52,7 +44,6 @@ class ChatHook {
   }
 
   void dispose() {
-    messageController.dispose();
     scrollController.dispose();
   }
 }

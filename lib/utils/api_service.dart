@@ -4,7 +4,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 class ApiService {
   static final Dio _dio = Dio(
     BaseOptions(
-      baseUrl: 'http://192.168.1.5:5000', // ganti sesuai IP backend kamu
+      baseUrl:
+          'https://skincheckbackend.onrender.com', // ganti sesuai IP backend kamu
       connectTimeout: const Duration(seconds: 10),
       receiveTimeout: const Duration(seconds: 10),
     ),
@@ -23,8 +24,8 @@ class ApiService {
 
   // POST ke endpoint /chat
   static Future<String?> sendChat({
-    required String message,
     required String chatId,
+    String? message,
     String? imageBase64,
   }) async {
     try {
@@ -36,7 +37,7 @@ class ApiService {
         '/chat',
         data: {
           "chat_id": chatId,
-          "message": message,
+          "message": message ?? "",
           "image_base64": imageBase64 ?? "",
           "user_id": userId ?? "",
         },

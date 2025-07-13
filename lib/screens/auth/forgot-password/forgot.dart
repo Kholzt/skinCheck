@@ -32,7 +32,8 @@ class _ForgotPasswordState extends State<ForgotPassword> {
     final primary = Theme.of(context).colorScheme.primary;
     final secondary = Theme.of(context).colorScheme.secondary;
     final width = MediaQuery.of(context).size.width;
-
+    final colorActive = Theme.of(context).primaryColor;
+    final colorDisabled = Theme.of(context).primaryColor.withOpacity(.6);
     return Scaffold(
       body: Stack(
         children: [
@@ -113,7 +114,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                                           Theme.of(
                                             context,
                                           ).colorScheme.secondary,
-                                      borderRadius: BorderRadius.circular(16),
+                                      borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: Text(
                                       viewModel!.message ??
@@ -142,10 +143,16 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                             ElevatedButton(
                               onPressed: () {
                                 if (_formKey.currentState!.validate()) {
-                                  viewModel!.forgotPassword();
+                                  viewModel!.forgotPassword(() {
+                                    setState(() {});
+                                  });
                                 }
                               },
                               style: ElevatedButton.styleFrom(
+                                backgroundColor:
+                                    viewModel!.isLoading
+                                        ? colorDisabled
+                                        : colorActive,
                                 padding: const EdgeInsets.symmetric(
                                   vertical: 16,
                                 ),

@@ -12,6 +12,7 @@ final ThemeData customTheme = ThemeData(
     seedColor: primaryColor,
     brightness: Brightness.light,
     secondary: secondaryColor,
+    primary: primaryColor,
   ),
   scaffoldBackgroundColor: Colors.white,
   appBarTheme: AppBarTheme(

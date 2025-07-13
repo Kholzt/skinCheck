@@ -8,6 +8,7 @@ class LoginHook {
   BuildContext context;
   String message = "";
   String errorMessage = "";
+  bool isLoading = false;
   LoginHook({required this.context});
 
   String? emailValidator(val) {
@@ -16,15 +17,20 @@ class LoginHook {
     return null;
   }
 
-  Future<void> forgotPassword() async {
+  Future<void> forgotPassword(VoidCallback callback) async {
     try {
+      message = "";
+      callback();
       final email = emailController.text;
+      isLoading = true;
       await _authService.sendPasswordResetEmail(email);
-      emailController.clear();
+      // emailController.clear();
       message = "Tautan berhasil dikirim, silahkan cek di gmail anda";
-      debugPrint("✅ Login dengan Google berhasil");
+      callback();
+      isLoading = false;
     } on FirebaseAuthException catch (e) {
       errorMessage = "Terjadi kesalahan ketika mengirim tautan";
+      callback();
       debugPrint("❌ Login Google gagal: ${e.message}");
     }
   }
