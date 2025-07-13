@@ -1,0 +1,31 @@
+name: Build Flutter APK
+
+on:
+  push:
+    branches:
+      - main  # Ganti jika Anda pakai 'master' atau cabang lain
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🔄 Checkout code
+        uses: actions/checkout@v3
+
+      - name: 📦 Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.29.3"  # Sesuaikan versi Flutter Anda
+
+      - name: 📥 Install dependencies
+        run: flutter pub get
+
+      - name: 🛠️ Build APK
+        run: flutter build apk --release
+
+      - name: 📤 Upload APK artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: app-release.apk
+          path: build/app/outputs/flutter-apk/app-release.apk

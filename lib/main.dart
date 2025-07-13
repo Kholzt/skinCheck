@@ -1,17 +1,16 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:skin_chek/screens/auth/forgot-password/forgot.dart';
-import 'package:skin_chek/screens/chat/Chat.dart';
-import 'package:skin_chek/screens/home/home.dart';
 import 'package:skin_chek/screens/auth/login/login.dart';
+import 'package:skin_chek/screens/chat/Chat.dart';
 import 'package:skin_chek/splash.dart';
 import 'package:skin_chek/utils/theme.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-
+  await initializeDateFormatting('id_ID', null);
   runApp(MyApp());
 }
 

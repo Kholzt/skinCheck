@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:skin_chek/screens/chat/ChatItem.dart';
 import 'package:skin_chek/screens/chat/Drawer.dart';
 import 'package:skin_chek/screens/chat/chat_hook.dart';
@@ -15,13 +16,41 @@ class _ChatState extends State<Chat> {
   final _formKey = GlobalKey<FormState>();
   final ScrollController scrollController = ScrollController();
   final TextEditingController messageController = TextEditingController();
+
   List<Map<String, dynamic>> chat = [];
+  bool isOnline = true;
 
   @override
   void initState() {
     super.initState();
     viewModel.setContext(context);
     fetchChat();
+    checkConnection();
+    Connectivity().onConnectivityChanged.listen((result) {
+      checkConnection();
+    });
+  }
+
+  Future<void> checkConnection() async {
+    final connectivityResult = await Connectivity().checkConnectivity();
+    final online = connectivityResult != ConnectivityResult.none;
+
+    if (!mounted) return;
+
+    setState(() {
+      isOnline = online;
+    });
+
+    if (!online) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Tidak ada koneksi internet'),
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.only(top: 20, left: 20, right: 20),
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    }
   }
 
   Future<void> fetchChat() async {
@@ -47,7 +76,7 @@ class _ChatState extends State<Chat> {
   }
 
   Future<void> handleSend(String message) async {
-    if (message.trim().isEmpty) return;
+    if (message.trim().isEmpty || !isOnline) return;
 
     setState(() {
       chat.add({
@@ -78,7 +107,7 @@ class _ChatState extends State<Chat> {
           const Icon(Icons.chat_bubble_outline, size: 64, color: Colors.grey),
           const SizedBox(height: 16),
           const Text(
-            "Belum ada konsultasi",
+            "Selamat datang di SkinCheck",
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
@@ -90,13 +119,12 @@ class _ChatState extends State<Chat> {
           Wrap(
             spacing: 8,
             runSpacing: 8,
-            children:
-                quickQuestions.map((question) {
-                  return ElevatedButton(
-                    onPressed: () => handleSend(question),
-                    child: Text(question),
-                  );
-                }).toList(),
+            children: quickQuestions.map((question) {
+              return ElevatedButton(
+                onPressed: isOnline ? () => handleSend(question) : null,
+                child: Text(question),
+              );
+            }).toList(),
           ),
         ],
       ),
@@ -107,14 +135,13 @@ class _ChatState extends State<Chat> {
     return ListView(
       controller: scrollController,
       padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 16),
-      children:
-          chat.map((ch) {
-            return ChatItem(
-              message: ch['message'],
-              isSender: ch['sender'] == "user",
-              date: ch['timestamp'],
-            );
-          }).toList(),
+      children: chat.map((ch) {
+        return ChatItem(
+          message: ch['message'],
+          isSender: ch['sender'] == "user",
+          date: ch['timestamp'],
+        );
+      }).toList(),
     );
   }
 
@@ -129,14 +156,15 @@ class _ChatState extends State<Chat> {
             IconButton(
               icon: const Icon(Icons.attach_file),
               onPressed: () {
-                // TODO: handle attachme
+                // TODO: handle attachment
               },
             ),
             Expanded(
               child: TextFormField(
                 controller: messageController,
+                enabled: isOnline,
                 decoration: InputDecoration(
-                  hintText: "Tulis pesan...",
+                  hintText: isOnline ? "Tulis pesan..." : "Tidak ada koneksi",
                   contentPadding: const EdgeInsets.symmetric(
                     vertical: 10,
                     horizontal: 12,
@@ -149,7 +177,9 @@ class _ChatState extends State<Chat> {
             ),
             const SizedBox(width: 10),
             InkWell(
-              onTap: () => handleSend(messageController.text),
+              onTap: isOnline
+                  ? () => handleSend(messageController.text)
+                  : null,
               borderRadius: BorderRadius.circular(20),
               child: Container(
                 padding: const EdgeInsets.symmetric(
@@ -157,7 +187,9 @@ class _ChatState extends State<Chat> {
                   horizontal: 12,
                 ),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primary,
+                  color: isOnline
+                      ? Theme.of(context).colorScheme.primary
+                      : Colors.grey.shade400,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Icon(Icons.send, color: Colors.white, size: 28),

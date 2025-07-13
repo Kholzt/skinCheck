@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:intl/intl.dart';
 
 class ChatItem extends StatelessWidget {
   final String message;
@@ -11,6 +13,18 @@ class ChatItem extends StatelessWidget {
     required this.isSender,
     required this.date,
   });
+
+  String _formatDate(String dateStr) {
+    try {
+      final timestamp = DateTime.parse(
+        dateStr,
+      ); // Format: "2025-07-13T20:20:00"
+      return DateFormat('d MMMM yyyy, HH:mm', 'id_ID').format(timestamp);
+    } catch (s) {
+      print(s);
+      return dateStr; // fallback jika parsing gagal
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -37,13 +51,18 @@ class ChatItem extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(message, style: TextStyle(color: textColor, fontSize: 14)),
+                MarkdownBody(
+                  data: message,
+                  styleSheet: MarkdownStyleSheet(
+                    p: TextStyle(color: textColor, fontSize: 14),
+                  ),
+                ),
                 const SizedBox(height: 4),
                 Align(
                   alignment:
                       isSender ? Alignment.bottomRight : Alignment.bottomLeft,
                   child: Text(
-                    date,
+                    _formatDate(date),
                     style: TextStyle(
                       color: textColor.withOpacity(0.7),
                       fontSize: 10,

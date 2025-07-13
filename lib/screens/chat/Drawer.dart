@@ -9,24 +9,29 @@ class AppDrawer extends StatelessWidget {
   Widget build(BuildContext context) {
     User? user = (GoogleAuthService()).getUser();
     return Drawer(
+      backgroundColor: Colors.white,
       child: Column(
         children: [
-          DrawerHeader(
-            // decoration: BoxDecoration(color: Colors.blue),
+          Padding(
+            padding: const EdgeInsets.only(
+              left: 16,
+              right: 16,
+              top: 60,
+              bottom: 20,
+            ),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 CircleAvatar(
                   backgroundImage: NetworkImage(user?.photoURL ?? ""),
-                  radius: 30, // Ukuran lingkaran, 50 terlalu besar
+                  radius: 30,
                 ),
                 const SizedBox(width: 10),
                 Expanded(
-                  // ✅ Ini agar teks tidak berada di tengah
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start, // ✅ Rata kiri
-                    mainAxisAlignment: MainAxisAlignment.end,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize:
+                        MainAxisSize.min, // 🔑 supaya tinggi sesuai isi
                     children: [
                       Text(
                         user?.displayName ?? "Anonym",
@@ -35,19 +40,14 @@ class AppDrawer extends StatelessWidget {
                           fontSize: 14,
                         ),
                       ),
-                      Text(
-                        "Selamat Datang!",
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.primary,
-                          fontSize: 16,
-                        ),
-                      ),
+                      Text(user!.email ?? "", style: TextStyle(fontSize: 12)),
                     ],
                   ),
                 ),
               ],
             ),
           ),
+          const Divider(),
           ListTile(
             leading: const Icon(Icons.home),
             title: const Text('Beranda'),

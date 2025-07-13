@@ -25,8 +25,13 @@ class ChatHook {
 
   Future<void> sendChat({String? message}) async {
     scrollToBottom();
-    final chat = await ApiService.sendChat(message: message, chatId: chatId);
-    print(chat);
+    final now = DateTime.now(); // Waktu lokal perangkat
+    final timestamp = now.toIso8601String();
+    final chat = await ApiService.sendChat(
+      message: message,
+      chatId: chatId,
+      timestamp: timestamp,
+    );
   }
 
   void scrollToBottom() {

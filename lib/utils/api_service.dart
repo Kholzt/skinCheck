@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 
 class ApiService {
   static final Dio _dio = Dio(
@@ -25,6 +26,7 @@ class ApiService {
   // POST ke endpoint /chat
   static Future<String?> sendChat({
     required String chatId,
+    required String timestamp,
     String? message,
     String? imageBase64,
   }) async {
@@ -32,11 +34,11 @@ class ApiService {
       await _setAuthToken();
       final user = FirebaseAuth.instance.currentUser;
       final userId = user!.uid;
-
       final response = await _dio.post(
         '/chat',
         data: {
           "chat_id": chatId,
+          "timestamp": timestamp,
           "message": message ?? "",
           "image_base64": imageBase64 ?? "",
           "user_id": userId ?? "",
