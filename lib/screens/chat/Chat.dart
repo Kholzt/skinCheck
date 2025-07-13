@@ -3,6 +3,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:skin_chek/screens/chat/ChatItem.dart';
 import 'package:skin_chek/screens/chat/Drawer.dart';
 import 'package:skin_chek/screens/chat/chat_hook.dart';
+import 'dart:math';
 
 class Chat extends StatefulWidget {
   const Chat({super.key});
@@ -94,11 +95,34 @@ class _ChatState extends State<Chat> {
   }
 
   Widget buildQuickActions() {
-    final List<String> quickQuestions = [
+    final List<String> allQuickQuestions = [
       "Saya gatal-gatal di tangan, kenapa ya?",
       "Kulit saya merah dan perih, apakah alergi?",
       "Saya punya bintik-bintik di wajah, normal?",
+      "Jerawat saya tidak kunjung hilang, apa yang harus saya lakukan?",
+      "Apakah kulit kering bisa menyebabkan gatal terus-menerus?",
+      "Apa penyebab munculnya ruam di leher?",
+      "Saya punya bercak putih di kulit, apakah itu panu?",
+      "Bagaimana cara merawat kulit sensitif?",
+      "Apakah sinar matahari bisa memperparah eksim?",
+      "Kenapa kulit saya tiba-tiba bersisik?",
+      "Clea, apakah kamu menggunakan AI untuk mendiagnosis?",
+      "Apakah krim kortikosteroid aman digunakan lama?",
+      "Bagaimana cara membedakan jerawat dan alergi kulit?",
+      "Kulit saya menghitam setelah luka, apa solusinya?",
+      "Apa penyebab kulit mengelupas di ujung jari?",
+      "Apakah gatal-gatal bisa disebabkan oleh stres?",
+      "Clea, dari mana kamu mendapatkan informasi medis?",
     ];
+
+    List<String> getRandomQuickQuestions(int count) {
+      final random = Random();
+      final shuffled = [...allQuickQuestions]..shuffle(random);
+      return shuffled.take(count).toList();
+    }
+
+    // Contoh penggunaan:
+    final List<String> quickQuestions = getRandomQuickQuestions(3);
 
     return Center(
       child: Column(
@@ -119,12 +143,13 @@ class _ChatState extends State<Chat> {
           Wrap(
             spacing: 8,
             runSpacing: 8,
-            children: quickQuestions.map((question) {
-              return ElevatedButton(
-                onPressed: isOnline ? () => handleSend(question) : null,
-                child: Text(question),
-              );
-            }).toList(),
+            children:
+                quickQuestions.map((question) {
+                  return ElevatedButton(
+                    onPressed: isOnline ? () => handleSend(question) : null,
+                    child: Text(question),
+                  );
+                }).toList(),
           ),
         ],
       ),
@@ -135,13 +160,14 @@ class _ChatState extends State<Chat> {
     return ListView(
       controller: scrollController,
       padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 16),
-      children: chat.map((ch) {
-        return ChatItem(
-          message: ch['message'],
-          isSender: ch['sender'] == "user",
-          date: ch['timestamp'],
-        );
-      }).toList(),
+      children:
+          chat.map((ch) {
+            return ChatItem(
+              message: ch['message'],
+              isSender: ch['sender'] == "user",
+              date: ch['timestamp'],
+            );
+          }).toList(),
     );
   }
 
@@ -180,9 +206,7 @@ class _ChatState extends State<Chat> {
             ),
             const SizedBox(width: 10),
             InkWell(
-              onTap: isOnline
-                  ? () => handleSend(messageController.text)
-                  : null,
+              onTap: isOnline ? () => handleSend(messageController.text) : null,
               borderRadius: BorderRadius.circular(20),
               child: Container(
                 padding: const EdgeInsets.symmetric(
@@ -190,9 +214,10 @@ class _ChatState extends State<Chat> {
                   horizontal: 12,
                 ),
                 decoration: BoxDecoration(
-                  color: isOnline
-                      ? Theme.of(context).colorScheme.primary
-                      : Colors.grey.shade400,
+                  color:
+                      isOnline
+                          ? Theme.of(context).colorScheme.primary
+                          : Colors.grey.shade400,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Icon(Icons.send, color: Colors.white, size: 28),
