@@ -163,6 +163,9 @@ class _ChatState extends State<Chat> {
               child: TextFormField(
                 controller: messageController,
                 enabled: isOnline,
+                maxLines: null,
+                minLines: 1,
+                keyboardType: TextInputType.multiline,
                 decoration: InputDecoration(
                   hintText: isOnline ? "Tulis pesan..." : "Tidak ada koneksi",
                   contentPadding: const EdgeInsets.symmetric(
