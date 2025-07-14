@@ -62,7 +62,16 @@ class LoginHook {
 
   void _showError(BuildContext context, String message) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: Colors.red),
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+        margin: EdgeInsets.only(
+          bottom: MediaQuery.of(context).size.height - 100,
+          left: 50,
+          right: 50,
+        ),
+        duration: const Duration(seconds: 5),
+      ),
     );
   }
 

@@ -7,6 +7,13 @@ const secondaryColor = Color(0xFF69D7C4); // Sekarang jadi lebih terang
 const primaryColor = Color(0xFF06A98D); // Sekarang jadi lebih gelap
 
 final ThemeData customTheme = ThemeData(
+  pageTransitionsTheme: PageTransitionsTheme(
+    builders: {
+      TargetPlatform.android:
+          FadeUpwardsPageTransitionsBuilder(), // default Android
+      TargetPlatform.iOS: CupertinoPageTransitionsBuilder(), // default iOS
+    },
+  ),
   useMaterial3: true,
   colorScheme: ColorScheme.fromSeed(
     seedColor: primaryColor,
@@ -54,5 +61,15 @@ final ThemeData customTheme = ThemeData(
       fontWeight: FontWeight.bold,
       color: primaryColor,
     ),
+  ),
+  snackBarTheme: SnackBarThemeData(
+    behavior: SnackBarBehavior.floating,
+    backgroundColor: Colors.black87,
+    contentTextStyle: const TextStyle(
+      color: Colors.white,
+      fontWeight: FontWeight.bold,
+    ),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+    elevation: 6,
   ),
 );

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 class ApiService {
   static final Dio _dio = Dio(
     BaseOptions(
+      // baseUrl: 'http://192.168.1.5:5000', // ganti sesuai IP backend kamu
       baseUrl:
           'https://skincheckbackend.onrender.com', // ganti sesuai IP backend kamu
       connectTimeout: const Duration(seconds: 10),
@@ -60,6 +61,19 @@ class ApiService {
       final userId = user!.uid;
       final response = await _dio.get('/chat/$userId/$chatId/history');
       return response.data['history'];
+    } on DioException catch (e) {
+      print("Get History Error: ${e.response}");
+      return [];
+    }
+  }
+
+  static Future<List<dynamic>> getAllChat() async {
+    try {
+      await _setAuthToken();
+      final user = FirebaseAuth.instance.currentUser;
+      final userId = user!.uid;
+      final response = await _dio.get('/chats/$userId');
+      return response.data['chats'];
     } on DioException catch (e) {
       print("Get History Error: ${e.response}");
       return [];

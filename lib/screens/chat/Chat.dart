@@ -1,12 +1,18 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:skin_chek/data/models/ChatItemModel.dart';
+import 'package:skin_chek/data/models/ChatModel.dart';
+import 'package:skin_chek/main.dart';
 import 'package:skin_chek/screens/chat/ChatItem.dart';
 import 'package:skin_chek/screens/chat/Drawer.dart';
 import 'package:skin_chek/screens/chat/chat_hook.dart';
-import 'dart:math';
 
 class Chat extends StatefulWidget {
-  const Chat({super.key});
+  final String? chatId;
+  const Chat({super.key, this.chatId});
 
   @override
   State<Chat> createState() => _ChatState();
@@ -18,51 +24,53 @@ class _ChatState extends State<Chat> {
   final ScrollController scrollController = ScrollController();
   final TextEditingController messageController = TextEditingController();
 
-  List<Map<String, dynamic>> chat = [];
-  bool isOnline = true;
+  List<ChatItemModel> chat = [];
+  List<ChatModel> chats = [];
+
+  bool isOnline = isOnlineNotifier.value;
+
+  File? selectedImage;
+  String? base64Image;
 
   @override
   void initState() {
     super.initState();
+    if (widget.chatId != null) {
+      viewModel.setChatId(widget.chatId);
+    }
     viewModel.setContext(context);
     fetchChat();
-    checkConnection();
-    Connectivity().onConnectivityChanged.listen((result) {
-      checkConnection();
+    isOnlineNotifier.addListener(() {
+      setState(() {
+        isOnline = isOnlineNotifier.value;
+      });
     });
-  }
-
-  Future<void> checkConnection() async {
-    final connectivityResult = await Connectivity().checkConnectivity();
-    final online = connectivityResult != ConnectivityResult.none;
-
-    if (!mounted) return;
-
-    setState(() {
-      isOnline = online;
-    });
-
-    if (!online) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Tidak ada koneksi internet'),
-          behavior: SnackBarBehavior.floating,
-          margin: const EdgeInsets.only(top: 20, left: 20, right: 20),
-          duration: const Duration(seconds: 3),
-        ),
-      );
-    }
   }
 
   Future<void> fetchChat() async {
     try {
-      final chats = await viewModel.getChat();
+      final chatsHistory = await viewModel.getChat();
+      final allChat = await viewModel.getAllChat();
+
       setState(() {
-        chat = chats;
+        chat = chatsHistory;
+        chats = allChat;
       });
       WidgetsBinding.instance.addPostFrameCallback((_) => scrollToBottom());
     } catch (e) {
       debugPrint("Error loading chat: $e");
+    }
+  }
+
+  Future<void> pickImage(ImageSource source) async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: source, imageQuality: 70);
+    if (pickedFile != null) {
+      setState(() {
+        selectedImage = File(pickedFile.path);
+        final bytes = selectedImage!.readAsBytesSync();
+        base64Image = base64Encode(bytes);
+      });
     }
   }
 
@@ -77,81 +85,209 @@ class _ChatState extends State<Chat> {
   }
 
   Future<void> handleSend(String message) async {
-    if (message.trim().isEmpty || !isOnline) return;
+    if ((!isOnline) || (message.trim().isEmpty && base64Image == null)) return;
 
     setState(() {
-      chat.add({
-        "message": message,
-        "sender": "user",
-        "timestamp": DateTime.now().toIso8601String(),
-      });
+      chat.add(
+        ChatItemModel(
+          message: message.isNotEmpty ? message : "[Gambar dikirim]",
+          image_base64: base64Image,
+          sender: "user",
+          created_at: DateTime.now().toIso8601String(),
+        ),
+      );
     });
 
     WidgetsBinding.instance.addPostFrameCallback((_) => scrollToBottom());
 
     messageController.clear();
-    await viewModel.sendChat(message: message);
+
+    if (message.isNotEmpty) {
+      setState(() {
+        selectedImage = null;
+      });
+      await viewModel.sendChat(image: base64Image, message: message);
+      setState(() {
+        base64Image = null;
+      });
+    }
+    // if (base64Image != null) {
+    //   setState(() {
+    //     selectedImage = null;
+    //     base64Image = null;
+    //   });
+    //   await viewModel.sendChat(image: base64Image, message: message);
+    // }
     await fetchChat();
   }
 
   Widget buildQuickActions() {
     final List<String> allQuickQuestions = [
       "Saya gatal-gatal di tangan, kenapa ya?",
-      "Kulit saya merah dan perih, apakah alergi?",
       "Saya punya bintik-bintik di wajah, normal?",
-      "Jerawat saya tidak kunjung hilang, apa yang harus saya lakukan?",
-      "Apakah kulit kering bisa menyebabkan gatal terus-menerus?",
-      "Apa penyebab munculnya ruam di leher?",
-      "Saya punya bercak putih di kulit, apakah itu panu?",
-      "Bagaimana cara merawat kulit sensitif?",
-      "Apakah sinar matahari bisa memperparah eksim?",
-      "Kenapa kulit saya tiba-tiba bersisik?",
-      "Clea, apakah kamu menggunakan AI untuk mendiagnosis?",
-      "Apakah krim kortikosteroid aman digunakan lama?",
-      "Bagaimana cara membedakan jerawat dan alergi kulit?",
       "Kulit saya menghitam setelah luka, apa solusinya?",
       "Apa penyebab kulit mengelupas di ujung jari?",
       "Apakah gatal-gatal bisa disebabkan oleh stres?",
       "Clea, dari mana kamu mendapatkan informasi medis?",
     ];
 
-    List<String> getRandomQuickQuestions(int count) {
-      final random = Random();
-      final shuffled = [...allQuickQuestions]..shuffle(random);
-      return shuffled.take(count).toList();
-    }
-
     // Contoh penggunaan:
-    final List<String> quickQuestions = getRandomQuickQuestions(3);
+    final List<String> quickQuestions = allQuickQuestions;
 
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.chat_bubble_outline, size: 64, color: Colors.grey),
+            const SizedBox(height: 16),
+            const Text(
+              "Selamat datang di SkinCheck",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              "Pilih salah satu pertanyaan di bawah ini untuk memulai.",
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 20),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children:
+                  quickQuestions.map((question) {
+                    return SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: isOnline ? () => handleSend(question) : null,
+                        child: Text(question),
+                      ),
+                    );
+                  }).toList(),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget buildImagePreview() {
+    if (selectedImage == null) return const SizedBox();
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      child: Stack(
         children: [
-          const Icon(Icons.chat_bubble_outline, size: 64, color: Colors.grey),
-          const SizedBox(height: 16),
-          const Text(
-            "Selamat datang di SkinCheck",
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          Container(
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey, width: 2),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Image.file(
+                selectedImage!,
+                height: 50,
+                width: 50,
+                fit: BoxFit.cover,
+              ),
+            ),
           ),
-          const SizedBox(height: 8),
-          const Text(
-            "Pilih salah satu pertanyaan di bawah ini untuk memulai.",
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 20),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children:
-                quickQuestions.map((question) {
-                  return ElevatedButton(
-                    onPressed: isOnline ? () => handleSend(question) : null,
-                    child: Text(question),
-                  );
-                }).toList(),
+          Positioned(
+            right: -10,
+            top: -10,
+            child: IconButton(
+              icon: const Icon(Icons.cancel, color: Colors.red),
+              onPressed: () {
+                setState(() {
+                  selectedImage = null;
+                  base64Image = null;
+                });
+              },
+            ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget buildChatInput() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+      color: Colors.white,
+      child: Form(
+        key: _formKey,
+        child: Column(
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.photo),
+                  onPressed:
+                      isOnline ? () => pickImage(ImageSource.gallery) : null,
+                ),
+                IconButton(
+                  icon: const Icon(Icons.camera_alt),
+                  onPressed:
+                      isOnline ? () => pickImage(ImageSource.camera) : null,
+                ),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      buildImagePreview(),
+                      TextFormField(
+                        controller: messageController,
+                        enabled: isOnline,
+                        maxLines: null,
+                        minLines: 1,
+                        keyboardType: TextInputType.multiline,
+                        decoration: InputDecoration(
+                          hintText:
+                              isOnline ? "Tulis pesan..." : "Tidak ada koneksi",
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: 10,
+                            horizontal: 12,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 10),
+                InkWell(
+                  onTap:
+                      isOnline
+                          ? () => handleSend(messageController.text)
+                          : null,
+                  borderRadius: BorderRadius.circular(20),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 10,
+                      horizontal: 12,
+                    ),
+                    decoration: BoxDecoration(
+                      color:
+                          isOnline
+                              ? Theme.of(context).colorScheme.primary
+                              : Colors.grey.shade400,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(
+                      Icons.send,
+                      color: Colors.white,
+                      size: 28,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -163,76 +299,19 @@ class _ChatState extends State<Chat> {
       children:
           chat.map((ch) {
             return ChatItem(
-              message: ch['message'],
-              isSender: ch['sender'] == "user",
-              date: ch['timestamp'],
+              image: ch.image_base64,
+              message: ch.message ?? "",
+              isSender: ch.sender == "user",
+              date: ch.created_at ?? "",
             );
           }).toList(),
-    );
-  }
-
-  Widget buildChatInput() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-      color: Colors.white,
-      child: Form(
-        key: _formKey,
-        child: Row(
-          children: [
-            IconButton(
-              icon: const Icon(Icons.attach_file),
-              onPressed: () {
-                // TODO: handle attachment
-              },
-            ),
-            Expanded(
-              child: TextFormField(
-                controller: messageController,
-                enabled: isOnline,
-                maxLines: null,
-                minLines: 1,
-                keyboardType: TextInputType.multiline,
-                decoration: InputDecoration(
-                  hintText: isOnline ? "Tulis pesan..." : "Tidak ada koneksi",
-                  contentPadding: const EdgeInsets.symmetric(
-                    vertical: 10,
-                    horizontal: 12,
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 10),
-            InkWell(
-              onTap: isOnline ? () => handleSend(messageController.text) : null,
-              borderRadius: BorderRadius.circular(20),
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  vertical: 10,
-                  horizontal: 12,
-                ),
-                decoration: BoxDecoration(
-                  color:
-                      isOnline
-                          ? Theme.of(context).colorScheme.primary
-                          : Colors.grey.shade400,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(Icons.send, color: Colors.white, size: 28),
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: AppDrawer(),
+      drawer: AppDrawer(chats: chats),
       appBar: AppBar(
         iconTheme: const IconThemeData(color: Colors.black),
         backgroundColor: Colors.transparent,
@@ -241,9 +320,10 @@ class _ChatState extends State<Chat> {
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
-            onPressed: () {
-              Navigator.pushReplacementNamed(context, "/chat");
-            },
+            onPressed:
+                isOnline
+                    ? () => Navigator.pushReplacementNamed(context, "/chat")
+                    : null,
           ),
         ],
       ),
